@@ -113,75 +113,6 @@
             border-bottom: none;
         }
     </style>
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, query, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-        // Global variables for Firebase and other app state
-        window.app;
-        window.db;
-        window.auth;
-        window.userId;
-        window.playerRef;
-
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                window.app = initializeApp(firebaseConfig);
-                window.db = getFirestore(window.app);
-                window.auth = getAuth(window.app);
-
-                // Authenticate the user
-                onAuthStateChanged(window.auth, async (user) => {
-                    if (user) {
-                        window.userId = user.uid;
-                        document.getElementById('player-id-display').innerText = `Player ID: ${window.userId}`;
-                        console.log("User authenticated with ID:", window.userId);
-
-                        // Define the player's document reference
-                        window.playerRef = doc(window.db, `artifacts/${appId}/public/data/players/${window.userId}`);
-
-                        // Listen for real-time updates to the player's data
-                        onSnapshot(window.playerRef, (docSnap) => {
-                            if (docSnap.exists()) {
-                                const data = docSnap.data();
-                                window.gameState = data;
-                                updateStatsUI();
-                                console.log("Player data updated:", data);
-                            } else {
-                                console.log("Player data does not exist yet. Initializing game.");
-                                // The game will be initialized when the user submits their info
-                            }
-                        });
-                    } else {
-                        // Sign in anonymously if no auth token is provided
-                        try {
-                            if (initialAuthToken) {
-                                await signInWithCustomToken(window.auth, initialAuthToken);
-                            } else {
-                                await signInAnonymously(window.auth);
-                            }
-                        } catch (error) {
-                            console.error("Error during authentication:", error);
-                        }
-                    }
-                });
-
-            } catch (error) {
-                console.error("Firebase initialization failed:", error);
-                document.getElementById('welcome-screen').innerHTML = `
-                    <p class="text-red-500 font-bold">Error: Failed to initialize Firebase.
-                    This app requires a valid Firebase configuration to run.
-                    Please ensure the app is running in the Canvas environment.</p>
-                `;
-            }
-        });
-    </script>
 </head>
 <body class="antialiased">
     <div class="game-container">
@@ -208,7 +139,6 @@
                 <div class="loading-spinner mx-auto"></div>
                 <p class="mt-4 text-gray-400">Generating your life path...</p>
             </div>
-            <p id="player-id-display" class="mt-6 text-sm text-gray-500"></p>
         </div>
 
         <!-- Main Game Screen -->
@@ -262,7 +192,6 @@
                     <button type="submit" class="button-primary md:w-auto flex-shrink-0">Make a Choice</button>
                 </form>
             </div>
-            <p id="game-id-display" class="mt-4 text-center text-sm text-gray-500"></p>
         </div>
 
         <!-- Custom Modal for Alerts -->
@@ -274,9 +203,9 @@
         </div>
     </div>
 
-    <script type="module">
-        // Global game state. Will be synchronized with Firestore.
-        window.gameState = {
+    <script>
+        // Global game state. Will be synchronized with localStorage.
+        let gameState = {
             name: '',
             career: '',
             skills: '',
@@ -292,10 +221,27 @@
             isGameInitialized: false
         };
 
-        // This API key is automatically provided by the Canvas environment.
-        // We do not need to hardcode it.
-        const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=";
-        const apiKey = "";
+        // Load game state from localStorage on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedState = localStorage.getItem('livLifeState');
+            if (savedState) {
+                gameState = JSON.parse(savedState);
+                if (gameState.isGameInitialized) {
+                    document.getElementById('welcome-screen').classList.add('hidden');
+                    document.getElementById('game-screen').classList.remove('hidden');
+                    updateStatsUI();
+                    // Reload all past scenarios from localStorage
+                    gameState.scenarios.forEach(logEntry => displayScenario(logEntry, logEntry));
+                    // Generate a new scenario for the current game state
+                    generateNewScenario();
+                }
+            }
+        });
+
+        // Save game state to localStorage
+        function saveGameState() {
+            localStorage.setItem('livLifeState', JSON.stringify(gameState));
+        }
 
         // Show a custom modal instead of alert()
         function showModal(message) {
@@ -310,11 +256,11 @@
 
         // Update the UI with the latest scores
         function updateStatsUI() {
-            const scores = window.gameState.scores;
+            const scores = gameState.scores;
             const stats = ['career', 'financial', 'social', 'happiness'];
 
             // Update the main career display
-            document.getElementById('career-display').textContent = window.gameState.career;
+            document.getElementById('career-display').textContent = gameState.career;
 
             stats.forEach(stat => {
                 const value = Math.max(0, Math.min(100, scores[stat] || 50));
@@ -378,19 +324,18 @@
             }, 2000);
         }
 
-        // Make an API call to Gemini
+        // Make an API call to a secure proxy
         async function callGeminiAPI(prompt, retries = 3, delay = 1000) {
+            // IMPORTANT: This URL points to your deployed proxy server.
+            const API_PROXY_URL = 'https://livlife-proxy.vercel.app/api/generate-content';
+
             const payload = {
-                contents: [{
-                    parts: [{
-                        text: prompt
-                    }]
-                }]
+                prompt: prompt
             };
 
             for (let i = 0; i < retries; i++) {
                 try {
-                    const response = await fetch(API_URL + apiKey, {
+                    const response = await fetch(API_PROXY_URL, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -409,11 +354,7 @@
                     }
 
                     const result = await response.json();
-                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts) {
-                        return result.candidates[0].content.parts[0].text;
-                    } else {
-                        throw new Error("Invalid API response format");
-                    }
+                    return result.text;
                 } catch (error) {
                     console.error("Gemini API call error:", error);
                     if (i === retries - 1) {
@@ -452,7 +393,7 @@
 
             if (careerResult) {
                 // Initialize game state with user data
-                window.gameState = {
+                gameState = {
                     name: name,
                     career: careerResult.trim(),
                     skills: skills,
@@ -467,20 +408,13 @@
                     isGameInitialized: true
                 };
 
-                // Save initial state to Firestore
-                try {
-                    await setDoc(window.playerRef, window.gameState, { merge: true });
-                } catch (error) {
-                    console.error("Error writing initial game state to Firestore:", error);
-                    showModal("Error saving game progress. Please check your internet connection.");
-                }
+                saveGameState(); // Save initial state to localStorage
 
                 document.getElementById('loading-spinner').classList.add('hidden');
                 document.getElementById('welcome-screen').classList.add('hidden');
                 document.getElementById('game-screen').classList.remove('hidden');
-                document.getElementById('game-id-display').innerText = `Player ID: ${window.userId}`;
-
-                // Fetch the first scenario
+                
+                updateStatsUI();
                 generateNewScenario();
             } else {
                 document.getElementById('start-form').classList.remove('hidden');
@@ -491,7 +425,7 @@
         // Generate and display a new scenario
         async function generateNewScenario() {
             const prompt = `
-                You are a sophisticated AI running a life simulation game. The user is a player named "${window.gameState.name}" with the career of "${window.gameState.career}".
+                You are a sophisticated AI running a life simulation game. The user is a player named "${gameState.name}" with the career of "${gameState.career}".
 
                 Create a short, engaging scenario for the player to react to. The scenario should involve a decision or a free-text response. It can be related to their career, social life, or both. The persona of the person they interact with should be distinct and have a clear personality (e.g., a demanding boss, a laid-back friend, a quirky stranger).
 
@@ -502,7 +436,7 @@
 
             const scenarioText = await callGeminiAPI(prompt);
             if (scenarioText) {
-                window.gameState.currentScenario = { prompt: scenarioText.trim() };
+                gameState.currentScenario = { prompt: scenarioText.trim() };
                 const newScenarioDiv = document.createElement('div');
                 newScenarioDiv.classList.add('p-4', 'bg-gray-700', 'rounded-lg', 'fade-in');
                 newScenarioDiv.innerHTML = `<p>${scenarioText.trim()}</p>`;
@@ -518,7 +452,7 @@
         document.getElementById('scenario-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const userAction = document.getElementById('action-input').value;
-            const currentScenario = window.gameState.currentScenario;
+            const currentScenario = gameState.currentScenario;
             
             if (!currentScenario) {
                 showModal("Please wait for a new scenario to load.");
@@ -531,7 +465,7 @@
             currentScenario.userAction = userAction;
 
             const resolvePrompt = `
-                You are a sophisticated AI running a life simulation game. The user, named "${window.gameState.name}", is a "${window.gameState.career}". The player's current stats are: Career: ${window.gameState.scores.career}, Financial: ${window.gameState.scores.financial}, Social: ${window.gameState.scores.social}, Happiness: ${window.gameState.scores.happiness}.
+                You are a sophisticated AI running a life simulation game. The user, named "${gameState.name}", is a "${gameState.career}". The player's current stats are: Career: ${gameState.scores.career}, Financial: ${gameState.scores.financial}, Social: ${gameState.scores.social}, Happiness: ${gameState.scores.happiness}.
 
                 The previous scenario was: "${currentScenario.prompt}"
                 The player's action was: "${userAction}"
@@ -565,10 +499,10 @@
                 }
 
                 // Update game state and display results
-                window.gameState.scores.career = Math.max(0, Math.min(100, window.gameState.scores.career + (changes.career || 0)));
-                window.gameState.scores.financial = Math.max(0, Math.min(100, window.gameState.scores.financial + (changes.financial || 0)));
-                window.gameState.scores.social = Math.max(0, Math.min(100, window.gameState.scores.social + (changes.social || 0)));
-                window.gameState.scores.happiness = Math.max(0, Math.min(100, window.gameState.scores.happiness + (changes.happiness || 0)));
+                gameState.scores.career = Math.max(0, Math.min(100, gameState.scores.career + (changes.career || 0)));
+                gameState.scores.financial = Math.max(0, Math.min(100, gameState.scores.financial + (changes.financial || 0)));
+                gameState.scores.social = Math.max(0, Math.min(100, gameState.scores.social + (changes.social || 0)));
+                gameState.scores.happiness = Math.max(0, Math.min(100, gameState.scores.happiness + (changes.happiness || 0)));
 
                 // Add the resolved scenario to the log
                 const scenarioLogEntry = {
@@ -576,15 +510,9 @@
                     result,
                     changes
                 };
-                window.gameState.scenarios.push(scenarioLogEntry);
+                gameState.scenarios.push(scenarioLogEntry);
 
-                // Update Firestore
-                try {
-                    await setDoc(window.playerRef, window.gameState, { merge: true });
-                } catch (error) {
-                    console.error("Error updating game state in Firestore:", error);
-                    showModal("Error saving game progress. Your game state may not be saved.");
-                }
+                saveGameState(); // Save updated state to localStorage
 
                 displayScenario(currentScenario, { result, changes });
                 updateStatsUI();
