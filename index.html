@@ -326,16 +326,20 @@
 
         // Make an API call to a secure proxy
         async function callGeminiAPI(prompt, retries = 3, delay = 1000) {
-            // IMPORTANT: This URL points to your deployed proxy server.
-            const API_PROXY_URL = 'https://livlife-proxy-fwzjmbno1-alex-przytockis-projects.vercel.app/api/generate-content';
+            // This is a direct API call without a proxy.
+            const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=AIzaSyAS_zE_sEljupu485Z6URL_qGdAv_7eqRE";
 
             const payload = {
-                prompt: prompt
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }]
             };
 
             for (let i = 0; i < retries; i++) {
                 try {
-                    const response = await fetch(API_PROXY_URL, {
+                    const response = await fetch(API_URL, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -354,7 +358,7 @@
                     }
 
                     const result = await response.json();
-                    return result.text;
+                    return result?.candidates?.[0]?.content?.parts?.[0]?.text;
                 } catch (error) {
                     console.error("Gemini API call error:", error);
                     if (i === retries - 1) {
