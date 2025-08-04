@@ -11,8 +11,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background: #111827;
-            color: #E5E7EB;
+            background: #FDF2F8; /* Soft light pink */
+            color: #1F2937;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -22,16 +22,16 @@
         .game-container {
             width: 100%;
             max-width: 900px;
-            background: #1F2937;
+            background: #FEF0F8; /* Slightly darker light pink */
             border-radius: 1.5rem;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             overflow: hidden;
-            border: 2px solid #374151;
+            border: 2px solid #FBCFEA; /* Pink border */
             display: flex;
             flex-direction: column;
         }
         .button-primary {
-            background-color: #4B5563;
+            background-color: #F472B6; /* Pink */
             color: white;
             padding: 0.75rem 1.5rem;
             border-radius: 0.75rem;
@@ -41,13 +41,13 @@
             border: none;
         }
         .button-primary:hover {
-            background-color: #6B7280;
+            background-color: #EC4899; /* Darker pink */
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             transform: translateY(-2px);
         }
         .stat-bar-container {
             width: 100%;
-            background-color: #374151;
+            background-color: #FBCFEA; /* Light pink */
             border-radius: 9999px;
             height: 0.75rem;
             overflow: hidden;
@@ -58,9 +58,9 @@
             transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
         }
         .input-text {
-            background: #374151;
-            border: 2px solid #4B5563;
-            color: #E5E7EB;
+            background: #FDF2F8;
+            border: 2px solid #FBCFEA;
+            color: #1F2937;
             border-radius: 0.75rem;
             padding: 0.75rem;
             width: 100%;
@@ -68,7 +68,7 @@
         }
         .input-text:focus {
             outline: none;
-            border-color: #60A5FA;
+            border-color: #EC4899;
         }
         .modal {
             position: fixed;
@@ -83,7 +83,7 @@
             z-index: 1000;
         }
         .modal-content {
-            background: #1F2937;
+            background: #FEF0F8;
             padding: 2rem;
             border-radius: 1.5rem;
             box-shadow: 0 10px 20px rgba(0,0,0,0.25);
@@ -91,8 +91,8 @@
             max-width: 500px;
         }
         .loading-spinner {
-            border: 4px solid #f3f3f3; /* Light grey */
-            border-top: 4px solid #60A5FA; /* Blue */
+            border: 4px solid #FBCFEA;
+            border-top: 4px solid #EC4899; /* Darker pink */
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -118,8 +118,8 @@
     <div class="game-container">
         <!-- Start Screen -->
         <div id="welcome-screen" class="p-8 md:p-12 text-center fade-in">
-            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-white">LivLife</h1>
-            <p class="text-lg text-gray-400 mb-8">Embark on a unique life journey where an AI crafts your destiny. Your choices shape your career, social life, and overall happiness.</p>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 text-[#EC4899]">LivLife</h1>
+            <p class="text-lg text-[#F472B6] mb-8">Embark on a unique life journey where an AI crafts your destiny. Your choices shape your career, social life, and overall happiness.</p>
             <form id="start-form" class="space-y-6">
                 <div>
                     <label for="name-input" class="block text-left text-sm font-medium mb-2">What is your name?</label>
@@ -137,48 +137,48 @@
             </form>
             <div id="loading-spinner" class="mt-8 hidden">
                 <div class="loading-spinner mx-auto"></div>
-                <p class="mt-4 text-gray-400">Generating your life path...</p>
+                <p class="mt-4 text-[#F472B6]">Generating your life path...</p>
             </div>
         </div>
 
         <!-- Main Game Screen -->
         <div id="game-screen" class="hidden h-full flex flex-col p-4 md:p-8">
             <!-- Stats Bar -->
-            <div class="flex flex-col md:flex-row justify-between items-center bg-gray-800 p-4 rounded-xl mb-6 shadow-lg">
+            <div class="flex flex-col md:flex-row justify-between items-center bg-[#FBCFEA] p-4 rounded-xl mb-6 shadow-lg">
                 <div class="stat-item flex-1 p-2">
                     <div class="flex justify-between text-sm font-medium mb-1">
                         <span>Career: <span id="career-stat-text">0</span></span>
                         <span id="career-change" class="text-green-400 transition-opacity duration-500"></span>
                     </div>
-                    <div class="stat-bar-container"><div id="career-bar" class="stat-bar bg-blue-500"></div></div>
+                    <div class="stat-bar-container"><div id="career-bar" class="stat-bar bg-[#FBCFEA]"></div></div>
                 </div>
                 <div class="stat-item flex-1 p-2">
                     <div class="flex justify-between text-sm font-medium mb-1">
                         <span>Financial: <span id="financial-stat-text">0</span></span>
                         <span id="financial-change" class="text-green-400 transition-opacity duration-500"></span>
                     </div>
-                    <div class="stat-bar-container"><div id="financial-bar" class="stat-bar bg-green-500"></div></div>
+                    <div class="stat-bar-container"><div id="financial-bar" class="stat-bar bg-[#FBCFEA]"></div></div>
                 </div>
                 <div class="stat-item flex-1 p-2">
                     <div class="flex justify-between text-sm font-medium mb-1">
                         <span>Social: <span id="social-stat-text">0</span></span>
                         <span id="social-change" class="text-green-400 transition-opacity duration-500"></span>
                     </div>
-                    <div class="stat-bar-container"><div id="social-bar" class="stat-bar bg-yellow-500"></div></div>
+                    <div class="stat-bar-container"><div id="social-bar" class="stat-bar bg-[#FBCFEA]"></div></div>
                 </div>
                 <div class="stat-item flex-1 p-2">
                     <div class="flex justify-between text-sm font-medium mb-1">
                         <span>Happiness: <span id="happiness-stat-text">0</span></span>
                         <span id="happiness-change" class="text-green-400 transition-opacity duration-500"></span>
                     </div>
-                    <div class="stat-bar-container"><div id="happiness-bar" class="stat-bar bg-purple-500"></div></div>
+                    <div class="stat-bar-container"><div id="happiness-bar" class="stat-bar bg-[#FBCFEA]"></div></div>
                 </div>
             </div>
 
             <!-- Main Content Area -->
-            <div class="flex-1 bg-gray-800 rounded-xl p-6 shadow-lg flex flex-col">
+            <div class="flex-1 bg-[#FDF2F8] rounded-xl p-6 shadow-lg flex flex-col">
                 <div class="mb-4">
-                    <h2 class="text-xl font-bold text-white">Career: <span id="career-display" class="text-blue-400"></span></h2>
+                    <h2 class="text-xl font-bold text-[#EC4899]">Career: <span id="career-display" class="text-[#EC4899]"></span></h2>
                 </div>
                 <div id="scenarios-container" class="space-y-4 flex-1 overflow-y-auto">
                     <!-- Scenarios will be dynamically added here -->
@@ -197,7 +197,7 @@
         <!-- Custom Modal for Alerts -->
         <div id="custom-modal" class="modal hidden">
             <div class="modal-content text-center">
-                <p id="modal-text" class="text-lg text-gray-300 mb-6"></p>
+                <p id="modal-text" class="text-lg text-[#1F2937] mb-6"></p>
                 <button onclick="closeModal()" class="button-primary">OK</button>
             </div>
         </div>
@@ -277,7 +277,7 @@
                 } else if (value < 60) {
                     statBar.style.backgroundColor = '#F59E0B'; // Yellow
                 } else {
-                    statBar.style.backgroundColor = stat === 'career' ? '#3B82F6' : stat === 'financial' ? '#10B981' : stat === 'social' ? '#FBBF24' : '#8B5CF6';
+                    statBar.style.backgroundColor = stat === 'career' ? '#EC4899' : stat === 'financial' ? '#8B5CF6' : stat === 'social' ? '#FBBF24' : '#F472B6';
                 }
             });
         }
@@ -286,21 +286,21 @@
         function displayScenario(scenario, outcome) {
             const scenariosContainer = document.getElementById('scenarios-container');
             const scenarioDiv = document.createElement('div');
-            scenarioDiv.classList.add('fade-in', 'pb-4', 'border-b', 'border-gray-700');
+            scenarioDiv.classList.add('fade-in', 'pb-4', 'border-b', 'border-[#FBCFEA]');
             scenarioDiv.innerHTML = `
                 <div class="mb-2">
-                    <p class="font-bold text-gray-300">Scenario:</p>
+                    <p class="font-bold text-[#EC4899]">Scenario:</p>
                     <p>${scenario.prompt}</p>
                 </div>
                 <div class="mb-2">
-                    <p class="font-bold text-gray-300">Your Action:</p>
+                    <p class="font-bold text-[#EC4899]">Your Action:</p>
                     <p>"${scenario.userAction}"</p>
                 </div>
                 <div class="mb-2">
-                    <p class="font-bold text-gray-300">Outcome:</p>
+                    <p class="font-bold text-[#EC4899]">Outcome:</p>
                     <p>${outcome.result}</p>
                 </div>
-                <div class="text-sm text-gray-400">
+                <div class="text-sm text-[#F472B6]">
                     <p>
                         Career: <span class="${outcome.changes.career >= 0 ? 'text-green-400' : 'text-red-400'}">${outcome.changes.career > 0 ? '+' : ''}${outcome.changes.career}</span>,
                         Financial: <span class="${outcome.changes.financial >= 0 ? 'text-green-400' : 'text-red-400'}">${outcome.changes.financial > 0 ? '+' : ''}${outcome.changes.financial}</span>,
@@ -538,4 +538,39 @@
     </script>
 </body>
 </html>
+```
 
+The Canvas document has been updated to reflect the new self-contained approach. I'll now provide the full, final instructions.
+
+### **Final Instructions to Get Your Game Live**
+
+Based on our last conversation, we've identified that the fundamental issue was a build error on GitHub due to a misconfigured submodule. Since you can't see the file, the best course of action is to perform a clean-up and a fresh push.
+
+**Step 1: Clean Up and Re-Push from Your Local Machine**
+
+1.  **Open your Linux terminal.**
+2.  **Navigate to your game's directory:**
+    ```bash
+    cd "/mnt/chromeos/MyFiles/LivLife"
+    ```
+3.  **Ensure you have the latest code.**
+    ```bash
+    git pull origin main
+    ```
+4.  **Add and commit the changes.**
+    ```bash
+    git add index.html
+    git commit -m "Final, self-contained version of the game"
+    ```
+5.  **Force push the changes.** This is the crucial step to ensure the problematic submodule configuration is completely removed from GitHub.
+    ```bash
+    git push -f origin main
+    ```
+
+**Step 2: Check GitHub for Deployment Status**
+
+1.  After the push, go to your `LivLife-game` repository on GitHub.
+2.  Click on the **Settings** tab, then **Pages**.
+3.  You should see a new deployment in progress. Once it says "Your site is live at..." and a URL appears, your game will be ready.
+
+This final, self-contained version of the game, combined with a clean push, will eliminate all the previous issues you've been faci
